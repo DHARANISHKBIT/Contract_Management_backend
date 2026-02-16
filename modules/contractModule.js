@@ -38,8 +38,7 @@ const contractSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Active", "Expired", "Pending"],
-      default: "Pending",
+      enum: ["Active", "Expired", "Pending", "Expiring Soon"],
     },
 
     amount: {
@@ -53,7 +52,20 @@ const contractSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
+    assigned_user_email: {
+      type: String,
+      default: ""
+    },
+    assigned_to: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    phone_number: {
+      type: String,
+      default: ""
+    },
+ 
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
