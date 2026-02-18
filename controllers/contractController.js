@@ -7,20 +7,12 @@ const {
 } = require("../services/contractService");
 const User = require("../modules/userModule");
 
-// GET ALL CONTRACTS (admin: created by me, user: assigned to me)
+// GET ALL CONTRACTS CONTROLLER (only contracts created by logged-in admin)
   const getAllContracts = async (req, res) => {
     try {
       const userId = req.user?.id;
-      const role = req.user?.role;
 
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: "You must be logged in to view contracts.",
-        });
-      }
-
-      const contracts = await getAllContractsService(userId, role);
+      const contracts = await getAllContractsService(userId);
 
       res.status(200).json({
         success: true,

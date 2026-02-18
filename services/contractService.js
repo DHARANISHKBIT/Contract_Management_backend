@@ -1,19 +1,14 @@
 const Contract = require("../modules/contractModule");
 const mongoose = require("mongoose");
 
-// GET ALL CONTRACTS SERVICE (admin: created_by, user: assigned_to)
-const getAllContractsService = async (userId, role) => {
-  const userIdObjectId = userId ? new mongoose.Types.ObjectId(userId) : null;
-  const isUserRole = role === "user";
-  const query = userIdObjectId
-    ? isUserRole
-      ? { $or: [{ assigned_to: userIdObjectId }, { assiged_to: userIdObjectId }] }
-      : { created_by: userIdObjectId }
-    : {};
+// GET ALL CONTRACTS SERVICE (scoped to creator)
+const getAllContractsService = async (userId) => {
+  // If userId is provided, only return contracts created by that user
+  // Convert userId string to ObjectId for proper matching
+  const query = userId ? { created_by: new mongoose.Types.ObjectId(userId) } : {};
 
   const contracts = await Contract.find(query)
     .populate("created_by", "username email")
-    .populate("assigned_to", "username email")
     .sort({ createdAt: -1 }); // latest first
     const today = new Date();
 
