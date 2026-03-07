@@ -24,6 +24,17 @@ app.use("/api/users", userRoutes);
 app.use("/api/contracts", contractRoutes);
 app.use("/api/meetings",meetingRoutes);
 
+let meetLink = "";
+
+app.post("/send-meet", (req, res) => {
+    meetLink = req.body.meetLink;
+    res.send("Link stored");
+});
+
+app.get("/get-meet", (req, res) => {
+    res.json({ meetLink });
+});
+
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("MongoDB connected"))

@@ -47,6 +47,12 @@ const meetingSchema = new mongoose.Schema(
       default: ""
     },
 
+    meeting_link: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
     attendees: [
       {
         type: String   // emails or names
