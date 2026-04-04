@@ -12,6 +12,9 @@ const cors = require("cors");
 const userRoutes = require("./routers/userRoute");
 const contractRoutes = require("./routers/contractRoutes");
 const meetingRoutes = require("./routers/meetingRoutes");
+const notificationRoutes = require("./routers/notificationRoutes");
+const { runDailyExpiryReminders } = require("./services/notificationService");
+const cron = require("node-cron");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,7 +25,8 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/contracts", contractRoutes);
-app.use("/api/meetings",meetingRoutes);
+app.use("/api/meetings", meetingRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 let meetLink = "";
 
@@ -37,7 +41,13 @@ app.get("/get-meet", (req, res) => {
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
+  .then(() => {
+    console.log("MongoDB connected");
+    // Daily at 9:00 AM: send expiry reminders for contracts expiring in 0–4 days
+    cron.schedule("0 9 * * *", () => {
+      runDailyExpiryReminders().catch((err) => console.error("Expiry reminders error:", err));
+    });
+  })
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.listen(PORT, () => {

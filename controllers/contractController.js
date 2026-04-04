@@ -6,6 +6,7 @@ const {
   getDashboardStatsService,
 } = require("../services/contractService");
 const User = require("../modules/userModule");
+const { createContractCreatedNotification } = require("../services/notificationService");
 
 // GET ALL CONTRACTS (admin: created by me; user: assigned to me)
   const getAllContracts = async (req, res) => {
@@ -83,6 +84,14 @@ const createContract = async (req, res) => {
       end_date,
       assigned_to,
     });
+
+    if (assigned_to) {
+      try {
+        await createContractCreatedNotification(contract);
+      } catch (notifErr) {
+        console.error("Notification create failed:", notifErr);
+      }
+    }
 
     res.status(201).json({
       success: true,
