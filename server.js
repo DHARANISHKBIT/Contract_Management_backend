@@ -20,7 +20,35 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/contractDB";
 
-app.use(cors());
+// CORS: set CORS_ORIGINS or FRONTEND_URL (comma-separated) in production, e.g.
+// CORS_ORIGINS=https://myapp.vercel.app,http://localhost:5173
+const corsOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+if (process.env.NODE_ENV === "production" && corsOrigins.length === 0) {
+  console.warn(
+    "Production: set CORS_ORIGINS or FRONTEND_URL (comma-separated) to your frontend URL(s); otherwise all origins are allowed."
+  );
+}
+
+app.use(
+  cors({
+    origin:
+      corsOrigins.length === 0
+        ? true
+        : (origin, callback) => {
+            if (!origin || corsOrigins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(null, false);
+            }
+          },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 app.use("/api/users", userRoutes);
@@ -37,6 +65,11 @@ app.post("/send-meet", (req, res) => {
 
 app.get("/get-meet", (req, res) => {
     res.json({ meetLink });
+});
+
+// Health check for hosting platforms (Render, Railway, etc.)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ ok: true, service: "contract-cms-api" });
 });
 
 mongoose
